@@ -100,6 +100,7 @@ This architecture supports:
 - **Cell‑level featurization** extracted directly from `.xlsx` files
 - ConvNeXt V2 + Deformable DETR reference implementation
 - Training, evaluation, and inference scripts
+- [SimpleTableSense2AnnotationUI](https://github.com/Docimoto/SimpleTableSense2AnnotationUI) — a lightweight annotation UI for generating and validating Excel table detection ground truth, designed to pair with TableSense2 training workflows
 - YAML‑based configuration system
 - Docker-based environment for reproducible training, enabling cloud execution in Google Colab, managed GPU instances. You can easily extend to other public clouds
 - Support for local training on GPU-equipped workstations and laptops
