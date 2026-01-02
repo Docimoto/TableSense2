@@ -1,0 +1,70 @@
+# W&B Sweep Configuration
+name: "detr_hyperparam_tuning_v1"
+program: scripts/train_detector.py
+method: bayes  # Bayesian optimization for efficiency
+metric:
+  name: val/f1
+  goal: maximize
+
+# Explicit command to load the base config and then override with sweep params
+command:
+  - ${env}
+  - ${interpreter}
+  - ${program}
+  - "--config"
+  - "configs/detector_config.yaml"
+  - "--project-root"
+  - "."
+  - "--sweep"
+  - ${args}
+
+parameters:
+  # Training Dynamics
+  training.lr:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-3
+  
+  training.weight_decay:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-3
+  
+  training.warmup_epochs:
+    values: [3, 5]
+    
+  training.gradient_accumulation_steps:
+    values: [4, 8, 16]
+
+  # DETR Architecture (Constrained to avoid OOM)
+  model.detr.hidden_dim:
+    values: [128, 256]
+  
+  model.detr.num_encoder_layers:
+    values: [4, 6]
+    
+  model.detr.num_decoder_layers:
+    values: [4, 6]
+    
+  model.detr.dropout:
+    values: [0.1, 0.2, 0.3]
+
+  # Loss Weights (Crucial for DETR convergence)
+  model.loss.lambda_cls:
+    min: 0.5
+    max: 2.0
+  
+  model.loss.lambda_l1:
+    min: 2.0
+    max: 10.0
+  
+  model.loss.lambda_iou:
+    min: 1.0
+    max: 5.0
+
+# Early termination to prune bad runs, respecting warmup
+early_terminate:
+  type: hyperband
+  min_iter: 6  # > max(warmup_epochs) to allow convergence start
+  eta: 2
+

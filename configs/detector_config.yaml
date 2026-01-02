@@ -1,0 +1,56 @@
+# Deformable DETR-style table detector training configuration
+
+experiment:
+  name: "deformable_detr_table_detector"
+  project_name: "tablesense2"
+
+data:
+  dataset_names:
+    - "tablesense"
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+  split_seed: 42
+
+model:
+  type: "detector"
+  backbone:
+    name: "convnext_v2"
+    base_width: 64
+    depths: [3, 3, 9, 3]
+  detr:
+    num_queries: 10  # Reduced from 100: expect max 5-10 tables per sheet, 20 provides headroom
+    num_encoder_layers: 6
+    num_decoder_layers: 6
+    hidden_dim: 256
+    dropout: 0.1
+  loss:
+    lambda_cls: 1.0
+    lambda_l1: 5.0
+    lambda_iou: 2.0
+
+training:
+  batch_size: 1          # Variable sheet sizes
+  num_workers: 0
+  gradient_accumulation_steps: 8
+  max_epochs: 60
+  lr: 1e-4
+  weight_decay: 1e-4
+  warmup_epochs: 3
+  save_every_n_epochs: 10
+  early_stopping_patience: null   # Set to integer to enable early stopping
+  device: "mps"                   # MPS for Apple Silicon (M2), or "cpu" as fallback
+
+evaluation:
+  eob_threshold: 2.0
+
+visualization:
+  start_epoch: 25
+  buckets:
+    best_count: 20
+    worst_count: 20
+    high_miss_count: 20
+    high_extra_count: 20
+  cache_epochs: 3  # Track recently printed for N epochs to avoid duplicates
+
+

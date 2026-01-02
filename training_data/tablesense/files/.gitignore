@@ -1,0 +1,6 @@
+# Ignore all dataset files in this directory (keep folder in git).
+*
+!.gitignore
+
+
+

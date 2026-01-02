@@ -1,0 +1,58 @@
+# Minimal Deformable DETR configuration for v0 development
+# Use this config to get a working end-to-end pipeline before scaling up
+# Once working, gradually increase parameters and switch to detector_config.yaml
+
+experiment:
+  name: "deformable_detr_table_detector_minimal"
+  project_name: "tablesense2"
+
+data:
+  dataset_names:
+    - "tablesense"
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+  split_seed: 42
+
+model:
+  type: "detector"
+  backbone:
+    name: "convnext_v2"
+    base_width: 32        # Minimal: half of full config (64)
+    depths: [2, 2, 4, 2]  # Minimal: fewer blocks per stage [3, 3, 9, 3] → [2, 2, 4, 2]
+  detr:
+    num_queries: 10       # Minimal: half of full config (20)
+    num_encoder_layers: 2 # Minimal: much fewer than full config (6)
+    num_decoder_layers: 2 # Minimal: much fewer than full config (6)
+    hidden_dim: 128      # Minimal: half of full config (256)
+    dropout: 0.1
+  loss:
+    lambda_cls: 1.0
+    lambda_l1: 5.0
+    lambda_iou: 2.0
+
+training:
+  batch_size: 1          # Variable sheet sizes
+  num_workers: 0
+  gradient_accumulation_steps: 8
+  max_epochs: 3  # Reduced for quick test - will see visualizations in epochs 1, 2, 3
+
+  
+  lr: 1e-4
+  weight_decay: 1e-4
+  warmup_epochs: 3
+  save_every_n_epochs: 10
+  early_stopping_patience: 10   # Stop if validation F1 doesn't improve for 10 epochs
+  device: "mps"                   # MPS for Apple Silicon (M2), with CPU fallback enabled via env var
+
+evaluation:
+  eob_threshold: 2.0
+
+visualization:
+  start_epoch: 1  # Lowered for testing - will see visualizations from epoch 1
+  buckets:
+    best_count: 5  # Reduced for testing
+    worst_count: 5
+    high_miss_count: 5
+    high_extra_count: 5
+  cache_epochs: 3  # Track recently printed for N epochs to avoid duplicates

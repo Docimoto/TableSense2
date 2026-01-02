@@ -1,0 +1,46 @@
+# Vertex AI GPU configuration for Deformable DETR table detector
+# Optimized for CUDA/GPU training on Google Cloud
+
+experiment:
+  name: "deformable_detr_table_detector_vertex_ai"
+  project_name: "tablesense2"
+
+data:
+  dataset_names:
+    - "tablesense"
+  train_ratio: 0.8
+  val_ratio: 0.1
+  test_ratio: 0.1
+  split_seed: 42
+
+model:
+  type: "detector"
+  backbone:
+    name: "convnext_v2"
+    base_width: 64        # Full config for GPU training
+    depths: [3, 3, 9, 3]  # Full config
+  detr:
+    num_queries: 20       # Full config
+    num_encoder_layers: 6 # Full config
+    num_decoder_layers: 6 # Full config
+    hidden_dim: 256      # Full config
+    dropout: 0.1
+  loss:
+    lambda_cls: 1.0
+    lambda_l1: 5.0
+    lambda_iou: 2.0
+
+training:
+  batch_size: 4          # Can increase with GPU memory
+  num_workers: 4         # Can use multiple workers on GPU instances
+  gradient_accumulation_steps: 4
+  max_epochs: 100
+  lr: 1e-4
+  weight_decay: 1e-4
+  warmup_epochs: 3
+  save_every_n_epochs: 10
+  early_stopping_patience: 10
+  device: "cuda"         # Use CUDA for GPU training
+
+evaluation:
+  eob_threshold: 2.0
